@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}创建员工 - 权限管理系统{% endblock %}
+
+{% block header %}创建新员工{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">员工姓名</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">创建</button>
+                    <a href="{{ url_for('list_employees') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

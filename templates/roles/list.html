@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}角色管理 - 权限管理系统{% endblock %}
+
+{% block header %}角色管理{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        {% if system.check_permission(session.user.id, 'role:create') %}
+            <a href="{{ url_for('create_role') }}" class="btn btn-primary">创建新角色</a>
+        {% endif %}
+        {% if system.check_permission(session.user.id, 'permission:manage') %}
+            <a href="{{ url_for('add_permission_to_role') }}" class="btn btn-secondary">为角色添加权限</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">角色列表</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>角色名称</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for role in roles %}
+                        <tr>
+                            <td>{{ role.id }}</td>
+                            <td>{{ role.name }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="text-center">没有角色数据</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

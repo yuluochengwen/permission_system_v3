@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}分配角色 - 权限管理系统{% endblock %}
+
+{% block header %}为用户分配角色{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="user_id" class="form-label">选择用户</label>
+                        <select class="form-select" id="user_id" name="user_id" required>
+                            <option value="">-- 选择用户 --</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.id }} - {{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role_id" class="form-label">选择角色</label>
+                        <select class="form-select" id="role_id" name="role_id" required>
+                            <option value="">-- 选择角色 --</option>
+                            {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.id }} - {{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">分配</button>
+                    <a href="{{ url_for('list_users') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

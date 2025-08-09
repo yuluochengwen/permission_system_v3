@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}更新员工 - 权限管理系统{% endblock %}
+
+{% block header %}更新员工信息{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="id" class="form-label">员工ID</label>
+                        <input type="text" class="form-control" id="id" value="{{ employee.id }}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">员工姓名</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ employee.name }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">更新</button>
+                    <a href="{{ url_for('list_employees') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

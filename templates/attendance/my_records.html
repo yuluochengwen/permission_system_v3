@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}我的考勤记录{% endblock %}
+{% block header %}我的考勤记录{% endblock %}
+{% block content %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>上班签到</th>
+            <th>下班签到</th>
+            <th>异常情况</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.id }}</td>
+            <!-- 上班签到时间：使用正确字段 sign_in_time -->
+            <td>
+                {% if record.sign_in_time %}
+                    {{ record.sign_in_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                {% else %}
+                    未签到
+                {% endif %}
+            </td>
+            <!-- 下班签到时间：使用正确字段 sign_out_time -->
+            <td>
+                {% if record.sign_out_time %}
+                    {{ record.sign_out_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                {% else %}
+                    未签退
+                {% endif %}
+            </td>
+            <!-- 考勤状态：使用正确字段 status -->
+            <td>{{ record.status or '未记录' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

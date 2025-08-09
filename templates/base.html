@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}权限管理系统{% endblock %}</title>
+    {{ bootstrap.load_css() }}
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar .nav-link {
+            color: #333;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .content {
+            padding: 20px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .flash-message {
+            margin-top: 10px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">权限管理系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if 'user' in session %}
+                        <li class="nav-item me-3">
+                            <span class="nav-link text-light">欢迎, {{ session.user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="{{ url_for('logout') }}">退出登录</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="{{ url_for('login') }}">登录</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="{{ url_for('register') }}">注册</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            {% if 'user' in session %}
+                <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                                    首页
+                                </a>
+                            </li>
+                            {% if system.check_permission(session.user.id, 'user:view') %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'users' in request.endpoint %}active{% endif %}" href="{{ url_for('list_users') }}">
+                                    用户管理
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if system.check_permission(session.user.id, 'role:create') or system.check_permission(session.user.id, 'role:assign') %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'roles' in request.endpoint %}active{% endif %}" href="{{ url_for('list_roles') }}">
+                                    角色管理
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if system.check_permission(session.user.id, 'permission:manage') %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'permissions' in request.endpoint %}active{% endif %}" href="{{ url_for('list_permissions') }}">
+                                    权限管理
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if system.check_permission(session.user.id, 'employees:view') %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'employees' in request.endpoint %}active{% endif %}" href="{{ url_for('list_employees') }}">
+                                    员工管理
+                                </a>
+                            </li>
+                            {% endif %}
+                            <!-- 考勤管理相关菜单 -->
+                            {% if system.check_permission(session.user.id, 'attendance:manage') %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'attendance_manage' %}active{% endif %}"
+                                   href="{{ url_for('attendance_manage') }}">
+                                    考勤管理
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'attendance_settings' %}active{% endif %}"
+                                   href="{{ url_for('attendance_settings') }}">
+                                    考勤规则设置
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'my_attendance_records' %}active{% endif %}"
+                                   href="{{ url_for('my_attendance_records') }}">
+                                    我的考勤记录
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} flash-message">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <h1 class="h2 mt-4">{% block header %}{% endblock %}</h1>
+                <hr>
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {{ bootstrap.load_js() }}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

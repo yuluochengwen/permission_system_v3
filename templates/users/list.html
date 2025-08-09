@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理 - 权限管理系统{% endblock %}
+
+{% block header %}用户管理{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        {% if system.check_permission(session.user.id, 'user:create') %}
+            <a href="{{ url_for('create_user') }}" class="btn btn-primary">创建新用户</a>
+        {% endif %}
+        <a href="{{ url_for('assign_role') }}" class="btn btn-secondary">分配角色</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">用户列表</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>
+                                <a href="{{ url_for('user_permissions', user_id=user.id) }}" class="btn btn-sm btn-info">查看权限</a>
+                                {% if system.check_permission(session.user.id, 'user:delete') %}
+                                    <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除此用户吗？')">删除</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">没有用户数据</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

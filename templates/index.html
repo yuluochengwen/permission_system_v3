@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 权限管理系统{% endblock %}
+
+{% block header %}首页{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">欢迎使用权限管理系统</h5>
+                <p class="card-text">
+                    这是一个基于角色的权限管理系统，您可以通过左侧导航菜单访问各个功能模块。
+                </p>
+                
+                <!-- 替换为签到功能 -->
+                <div class="mt-4">
+                    <h6>今日签到</h6>
+                    <div class="d-flex gap-3 mt-2">
+                        <a href="{{ url_for('attendance_sign_in') }}" class="btn btn-primary">
+                            上班签到
+                        </a>
+                        <a href="{{ url_for('attendance_sign_out') }}" class="btn btn-success">
+                            下班签到
+                        </a>
+                        <a href="{{ url_for('my_attendance_records') }}" class="btn btn-info">
+                            查看我的签到记录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

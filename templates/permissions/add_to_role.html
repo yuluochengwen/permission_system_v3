@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}添加权限 - 权限管理系统{% endblock %}
+
+{% block header %}为角色添加权限{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="role_id" class="form-label">选择角色</label>
+                        <select class="form-select" id="role_id" name="role_id" required>
+                            <option value="">-- 选择角色 --</option>
+                            {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.id }} - {{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="permission_id" class="form-label">选择权限</label>
+                        <select class="form-select" id="permission_id" name="permission_id" required>
+                            <option value="">-- 选择权限 --</option>
+                            {% for permission in permissions %}
+                                <option value="{{ permission.id }}">{{ permission.id }} - {{ permission.name }} ({{ permission.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">添加</button>
+                    <a href="{{ url_for('list_permissions') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

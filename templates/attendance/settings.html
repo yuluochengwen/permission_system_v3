@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}考勤规则设置 - 权限管理系统{% endblock %}
+{% block header %}考勤规则设置{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 规则列表部分 -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">现有考勤规则</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for rule in all_rules %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ rule.id }}</strong>: {{ rule.work_start_time }} - {{ rule.work_end_time }}
+                            {% if rule.is_default %}
+                            <span class="badge bg-primary ms-2">当前默认</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary"
+                                    onclick="setAsDefault({{ rule.id }})">设为默认</button>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted">暂无考勤规则</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 规则编辑部分 -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{% if current_rule.id %}编辑规则 #{{ current_rule.id }}{% else %}新增规则{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('attendance_settings') }}">
+                    <!-- 隐藏字段用于传递规则ID（编辑时使用） -->
+                    {% if current_rule.id %}
+                    <input type="hidden" name="rule_id" value="{{ current_rule.id }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="start_time" class="form-label">上班时间</label>
+                        <input type="time" class="form-control" id="start_time" name="start_time"
+                               value="{{ current_rule.work_start_time }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="end_time" class="form-label">下班时间</label>
+                        <input type="time" class="form-control" id="end_time" name="end_time"
+                               value="{{ current_rule.work_end_time }}" required>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="set_default" name="set_default"
+                               {% if not current_rule.id or current_rule.is_default %}checked{% endif %}>
+                        <label class="form-check-label" for="set_default">设为默认规则</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {% if current_rule.id %}更新规则{% else %}添加规则{% endif %}
+                        </button>
+
+                        {% if current_rule.id and not current_rule.is_default %}
+                        <button type="button" class="btn btn-danger"
+                                onclick="deleteRule({{ current_rule.id }})">删除规则</button>
+                        {% endif %}
+
+                        <a href="{{ url_for('attendance_settings') }}" class="btn btn-outline-secondary ms-auto">
+                            新增规则
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript 功能 -->
+<script>
+// 设置默认规则
+function setAsDefault(ruleId) {
+    if (confirm('确定要将此规则设为默认吗？')) {
+        fetch("{{ url_for('attendance_set_default') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrf_token')
+            },
+            body: JSON.stringify({ rule_id: ruleId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('设置失败: ' + data.message);
+            }
+        })
+        .catch(error => console.error('错误:', error));
+    }
+}
+
+// 删除规则
+function deleteRule(ruleId) {
+    if (confirm('确定要删除此规则吗？')) {
+        fetch("{{ url_for('attendance_delete_rule') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrf_token')
+            },
+            body: JSON.stringify({ rule_id: ruleId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.href = "{{ url_for('attendance_settings') }}";
+            } else {
+                alert('删除失败: ' + data.message);
+            }
+        })
+        .catch(error => console.error('错误:', error));
+    }
+}
+
+// 获取CSRF令牌（用于表单提交安全验证）
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
