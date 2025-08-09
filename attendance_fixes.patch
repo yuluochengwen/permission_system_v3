@@ -1,0 +1,205 @@
+diff --git a/app.py b/app.py
+index 1234567..89abcde 100644
+--- a/app.py
++++ b/app.py
+@@ -42,15 +42,54 @@ class YourSystemClass:
+     def get_attendance_rules(self):
+         """获取当前考勤规则（默认取第一条）"""
+-        try:
+-            with self.connection.cursor() as cursor:
+-                cursor.execute("""
+-                    SELECT work_start_time, work_end_time 
+-                    FROM attendance_rules 
+-                    WHERE is_default = 1 
+-                    LIMIT 1
+-                """)
+-                rule = cursor.fetchone()
+-
+-                # 如果没有规则，返回默认时间
+-                if not rule:
+-                    return {"work_start_time": "09:00", "work_end_time": "18:00"}  # 改为HH:MM格式
+-
+-                # 修复：处理时间格式为HH:MM（适配input type="time"）
+-                def time_to_str(time_obj):
+-                    if time_obj.__class__.__name__ == 'time':
+-                        # 只保留小时和分钟，格式化为HH:MM
+-                        return time_obj.strftime("%H:%M")
+-                    elif isinstance(time_obj, str):
+-                        # 如果是字符串，去掉秒数（如从"09:00:00"截取为"09:00")
+-                        return time_obj.split(':')[0] + ':' + time_obj.split(':')[1]
+-                    return "00:00"
+-
+-                return {
+-                    "work_start_time": time_to_str(rule['work_start_time']),
+-                    "work_end_time": time_to_str(rule['work_end_time'])
+-                }
+-        except Error as e:
+-            print(f"\n✗ 错误: 获取考勤规则失败: {e}")
+-            return {"work_start_time": "09:00", "work_end_time": "18:00"}  # 改为HH:MM格式
++        try:
++            with self.connection.cursor() as cursor:
++                cursor.execute("""
++                    SELECT work_start_time, work_end_time
++                    FROM attendance_rules
++                    WHERE is_default = 1
++                    LIMIT 1
++                """)
++                rule = cursor.fetchone()
++                if not rule:
++                    return {"work_start_time": "09:00", "work_end_time": "18:00"}
++
++                def format_time(t):
++                    from datetime import time as _dt_time
++                    if isinstance(t, _dt_time):
++                        return t.strftime("%H:%M")
++                    if isinstance(t, str):
++                        return t[:5]
++                    return "00:00"
++
++                return {
++                    "work_start_time": format_time(rule.get('work_start_time')),
++                    "work_end_time": format_time(rule.get('work_end_time'))
++                }
++        except Error as e:
++            print(f"\n✗ 错误: 获取考勤规则失败: {e}")
++            return {"work_start_time": "09:00", "work_end_time": "18:00"}
+@@ -100,30 +139,51 @@ class YourSystemClass:
+     def sign_in(self, user_id):
+         """上班签到（自动判断是否迟到）"""
+-        try:
+-            # 获取当前日期（考虑工作日凌晨签到的情况，凌晨1-6点签到仍算前一天）
+-            now = datetime.now()
+-            if now.hour < 6:  # 凌晨6点前签到算前一天
+-                check_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+-            else:
+-                check_date = now.strftime("%Y-%m-%d")
+-
+-            rules = self.get_attendance_rules()
+-            work_start = datetime.strptime(rules['work_start_time'], "%H:%M").time()
+-
+-            with self.connection.cursor() as cursor:
+-                try:
+-                    # 尝试插入新记录
+-                    cursor.execute("""
+-                        INSERT INTO attendance (user_id, sign_in_time, check_date, status)
+-                        VALUES (%s, NOW(), %s, '正常')
+-                    """, (user_id, check_date))
+-                except pymysql.IntegrityError:
+-                    # 唯一约束冲突，说明当天已有记录，执行更新
+-                    cursor.execute("""
+-                        UPDATE attendance
+-                        SET sign_in_time = NOW()
+-                        WHERE user_id = %s AND check_date = %s
+-                    """, (user_id, check_date))
+-
+-                # 判断是否迟到（签到时间晚于上班时间）
+-                cursor.execute("""
+-                    UPDATE attendance
+-                    SET status = CASE 
+-                        WHEN TIME(sign_in_time) > %s THEN '迟到'
+-                        ELSE '正常'
+-                    END
+-                    WHERE user_id = %s AND check_date = %s
+-                """, (work_start, user_id, check_date))
+-
+-            self.connection.commit()
+-            return True
+-        except Error as e:
+-            print(f"\n✗ 错误: 上班签到失败: {e}")
+-            self.connection.rollback()
+-            return False
++        try:
++            now = datetime.now()
++            check_date = (now - timedelta(days=1)).strftime("%Y-%m-%d") if now.hour < 6 else now.strftime("%Y-%m-%d")
++            rules = self.get_attendance_rules()
++            work_start = datetime.strptime(rules['work_start_time'], "%H:%M").time()
++
++            with self.connection.cursor() as cursor:
++                cursor.execute("SELECT sign_in_time FROM attendance WHERE user_id = %s AND check_date = %s", (user_id, check_date))
++                row = cursor.fetchone()
++                if not row:
++                    cursor.execute("INSERT INTO attendance (user_id, sign_in_time, check_date, status) VALUES (%s, NOW(), %s, '正常')", (user_id, check_date))
++                elif not row.get('sign_in_time'):
++                    cursor.execute("UPDATE attendance SET sign_in_time = NOW() WHERE user_id = %s AND check_date = %s", (user_id, check_date))
++
++                cursor.execute("""
++                    UPDATE attendance
++                    SET status = CASE 
++                        WHEN sign_in_time IS NOT NULL AND TIME(sign_in_time) > %s THEN '迟到'
++                        ELSE status
++                    END
++                    WHERE user_id = %s AND check_date = %s
++                """, (work_start, user_id, check_date))
++
++            self.connection.commit()
++            return True
++        except Error as e:
++            print(f"\n✗ 错误: 上班签到失败: {e}")
++            self.connection.rollback()
++            return False
+@@ -170,30 +240,51 @@ class YourSystemClass:
+     def sign_out(self, user_id):
+         """下班签到（自动判断是否早退）"""
+-        try:
+-            # 获取当前日期（与签到逻辑保持一致）
+-            now = datetime.now()
+-            if now.hour < 6:  # 凌晨6点前签退算前一天
+-                check_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+-            else:
+-                check_date = now.strftime("%Y-%m-%d")
+-
+-            rules = self.get_attendance_rules()
+-            work_end = datetime.strptime(rules['work_end_time'], "%H:%M:%S").time()
+-
+-            with self.connection.cursor() as cursor:
+-                # 尝试更新签退时间
+-                cursor.execute("""
+-                    UPDATE attendance
+-                    SET sign_out_time = NOW()
+-                    WHERE user_id = %s AND check_date = %s
+-                """, (user_id, check_date))
+-
+-                # 检查是否有更新记录
+-                if cursor.rowcount == 0:
+-                    # 没有签到记录，创建一条（缺卡）
+-                    cursor.execute("""
+-                        INSERT INTO attendance (user_id, sign_out_time, check_date, status)
+-                        VALUES (%s, NOW(), %s, '缺卡')
+-                    """, (user_id, check_date))
+-
+-                # 判断是否早退（签退时间早于下班时间）
+-                cursor.execute("""
+-                    UPDATE attendance
+-                    SET status = CASE 
+-                        WHEN TIME(sign_out_time) < %s THEN '早退'
+-                        WHEN status = '迟到' THEN '迟到'  -- 如果已经是迟到，保持状态
+-                        ELSE '正常'
+-                    END
+-                    WHERE user_id = %s AND check_date = %s
+-                """, (work_end, user_id, check_date))
+-
+-            self.connection.commit()
+-            return True
+-        except Error as e:
+-            print(f"\n✗ 错误: 下班签到失败: {e}")
+-            self.connection.rollback()
+-            return False
++        try:
++            now = datetime.now()
++            check_date = (now - timedelta(days=1)).strftime("%Y-%m-%d") if now.hour < 6 else now.strftime("%Y-%m-%d")
++            rules = self.get_attendance_rules()
++            work_end = datetime.strptime(rules['work_end_time'], "%H:%M").time()
++
++            with self.connection.cursor() as cursor:
++                cursor.execute("SELECT sign_out_time, status FROM attendance WHERE user_id = %s AND check_date = %s", (user_id, check_date))
++                row = cursor.fetchone()
++                if not row:
++                    cursor.execute("INSERT INTO attendance (user_id, sign_out_time, check_date, status) VALUES (%s, NOW(), %s, '缺卡')", (user_id, check_date))
++                elif not row.get('sign_out_time'):
++                    cursor.execute("UPDATE attendance SET sign_out_time = NOW() WHERE user_id = %s AND check_date = %s", (user_id, check_date))
++
++                cursor.execute("""
++                    UPDATE attendance
++                    SET status = CASE 
++                        WHEN sign_out_time IS NOT NULL AND TIME(sign_out_time) < %s THEN '早退'
++##
