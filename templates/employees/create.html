@@ -1,24 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}创建员工 - 权限管理系统{% endblock %}
-
-{% block header %}创建新员工{% endblock %}
+{% block title %}创建员工{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">员工姓名</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">创建</button>
-                    <a href="{{ url_for('list_employees') }}" class="btn btn-secondary">取消</a>
-                </form>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">创建新员工</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">姓名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="age">年龄</label>
+                                <input type="number" class="form-control" id="age" name="age" min="18" max="100">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="gender">性别</label>
+                                <select class="form-control" id="gender" name="gender">
+                                    <option value="">请选择</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="education">学历</label>
+                            <select class="form-control" id="education" name="education">
+                                <option value="">请选择</option>
+                                <option value="高中">高中</option>
+                                <option value="大专">大专</option>
+                                <option value="本科">本科</option>
+                                <option value="硕士">硕士</option>
+                                <option value="博士">博士</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">联系电话</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="例如: 13800138000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">现住址</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">创建</button>
+                            <a href="{{ url_for('list_employees') }}" class="btn btn-secondary">取消</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

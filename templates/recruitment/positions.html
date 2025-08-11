@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}招聘职位 - 权限管理系统{% endblock %}
+
+{% block header %}招聘职位{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% if positions %}
+        {% for position in positions %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ position.position_name }}</h5>
+                    <p class="card-text"><strong>薪资范围：</strong>{{ position.salary_range }}</p>
+                    <p class="card-text"><strong>招聘人数：</strong>{{ position.hire_count }}人</p>
+                    <p class="card-text"><strong>最低学历：</strong>{{ position.min_education }}</p>
+                    <p class="card-text"><small class="text-muted">发布时间：{{ position.created_at.strftime('%Y-%m-%d') }}</small></p>
+                </div>
+                <div class="card-footer">
+                    {% if 'user' in session and session.user.is_guest %}
+                        <a href="{{ url_for('create_resume') }}?position_id={{ position.id }}" class="btn btn-sm btn-primary">投递简历</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">当前暂无招聘职位</div>
+        </div>
+    {% endif %}
+</div>
+
+{% if not session.user.is_guest and system.check_permission(session.user.id, 'employees:manage') %}
+<div class="mt-3">
+    <a href="{{ url_for('manage_positions') }}" class="btn btn-secondary">管理招聘职位</a>
+</div>
+{% endif %}
+{% endblock %}

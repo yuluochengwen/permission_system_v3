@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}公司介绍 - 权限管理系统{% endblock %}
+
+{% block header %}公司介绍{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">关于我们</h3>
+        <p class="card-text">
+            本公司成立于2020年，专注于企业级权限管理系统研发与服务，致力于为各类企业提供安全、高效的权限管控解决方案。
+            我们拥有一支经验丰富的技术团队，核心成员均来自知名互联网企业，具备深厚的技术积累和行业经验。
+        </p>
+
+        <h3 class="card-title mt-4">企业文化</h3>
+        <p class="card-text">
+            使命：让企业权限管理更简单、更安全<br>
+            愿景：成为行业领先的权限管理解决方案提供商<br>
+            价值观：诚信、创新、协作、共赢
+        </p>
+
+        <h3 class="card-title mt-4">联系我们</h3>
+        <p class="card-text">
+            地址：北京市海淀区科技园区88号<br>
+            电话：010-12345678<br>
+            邮箱：contact@example.com
+        </p>
+    </div>
+</div>
+
+{% if 'user' in session and session.user.is_guest %}
+<div class="mt-4">
+    <a href="{{ url_for('list_positions') }}" class="btn btn-primary">查看招聘信息</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}投递简历 - 权限管理系统{% endblock %}
+
+{% block header %}投递简历{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">姓名</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+
+            <!-- 重新添加年龄输入框 -->
+            <div class="mb-3">
+                <label for="age" class="form-label">年龄</label>
+                <input type="number" class="form-control" id="age" name="age"
+                       min="18" max="60" placeholder="请输入年龄">
+                <small class="form-text text-muted">18-60岁之间的整数</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="education" class="form-label">学历</label>
+                <select class="form-select" id="education" name="education" required>
+                    <option value="高中">高中</option>
+                    <option value="大专">大专</option>
+                    <option value="本科" selected>本科</option>
+                    <option value="硕士">硕士</option>
+                    <option value="博士">博士</option>
+                </select>
+            </div>
+
+            <!-- 其他字段保持不变 -->
+            <div class="mb-3">
+                <label for="graduate_school" class="form-label">毕业院校</label>
+                <input type="text" class="form-control" id="graduate_school" name="graduate_school" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="work_experience" class="form-label">工作经验（年）</label>
+                <input type="number" class="form-control" id="work_experience" name="work_experience" min="0" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="expected_salary" class="form-label">期望薪资</label>
+                <input type="text" class="form-control" id="expected_salary" name="expected_salary" placeholder="如：10k-15k" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="position_id" class="form-label">应聘岗位</label>
+                <select class="form-select" id="position_id" name="position_id" required>
+                    {% for position in positions %}
+                        <option value="{{ position.id }}">{{ position.position_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="contact" class="form-label">联系方式（电话）</label>
+                <input type="text" class="form-control" id="contact" name="contact" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">提交简历</button>
+            <a href="{{ url_for('list_positions') }}" class="btn btn-secondary ms-2">返回职位列表</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

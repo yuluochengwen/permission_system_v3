@@ -75,7 +75,7 @@
                                 onclick="deleteRule({{ current_rule.id }})">删除规则</button>
                         {% endif %}
 
-                        <a href="{{ url_for('attendance_settings') }}" class="btn btn-outline-secondary ms-auto">
+                        <a href="{{ url_for('attendance_settings', rule_id='new') }}" class="btn btn-outline-secondary ms-auto">
                             新增规则
                         </a>
                     </div>

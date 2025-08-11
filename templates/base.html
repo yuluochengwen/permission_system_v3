@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}权限管理系统{% endblock %}</title>
+    {{ bootstrap.load_js() }}
     {{ bootstrap.load_css() }}
     <style>
         .sidebar {
@@ -65,11 +66,13 @@
                 <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
                     <div class="position-sticky pt-3">
                         <ul class="nav flex-column">
+                            {% if not session.user.get('is_guest', False) %}
                             <li class="nav-item">
                                 <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
-                                    首页
+                                    签到打卡
                                 </a>
                             </li>
+                            {% endif %}
                             {% if system.check_permission(session.user.id, 'user:view') %}
                             <li class="nav-item">
                                 <a class="nav-link {% if 'users' in request.endpoint %}active{% endif %}" href="{{ url_for('list_users') }}">
@@ -113,12 +116,24 @@
                                 </a>
                             </li>
                             {% endif %}
+                            <!-- 招聘管理菜单 -->
+                            {% if system.check_permission(session.user.id, 'recruitment:create') or
+                                  system.check_permission(session.user.id, 'recruitment:cancel') or
+                                  system.check_permission(session.user.id, 'resume:view') %}
                             <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'my_attendance_records' %}active{% endif %}"
-                                   href="{{ url_for('my_attendance_records') }}">
-                                    我的考勤记录
+                                <a class="nav-link {% if request.endpoint == 'manage_positions' %}active{% endif %}"
+                                   href="{{ url_for('manage_positions') }}">
+                                    招聘职位管理
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'manage_resumes' %}active{% endif %}"
+                                   href="{{ url_for('manage_resumes') }}">
+                                    简历管理
+                                </a>
+                            </li>
+                            {% endif %}
+
                         </ul>
                     </div>
                 </div>

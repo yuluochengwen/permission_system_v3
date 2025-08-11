@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}职位管理 - 权限管理系统{% endblock %}
+
+{% block header %}招聘职位管理{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPositionModal">发布新职位</button>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>岗位名称</th>
+            <th>薪资范围</th>
+            <th>招聘人数</th>
+            <th>最低学历</th>
+            <th>状态</th>
+            <th>发布时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for position in positions %}
+        <tr>
+            <td>{{ position.id }}</td>
+            <td>{{ position.position_name }}</td>
+            <td>{{ position.salary_range }}</td>
+            <td>{{ position.hire_count }}</td>
+            <td>{{ position.min_education }}</td>
+            <td>
+                {% if position.is_active %}
+                    <span class="badge bg-success">在招</span>
+                {% else %}
+                    <span class="badge bg-secondary">已撤销</span>
+                {% endif %}
+            </td>
+            <td>{{ position.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+                {% if position.is_active %}
+                    <a href="{{ url_for('cancel_position', position_id=position.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('确定要撤销该职位吗？')">撤销</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 发布职位弹窗 - 修复表单提交地址 -->
+<form method="POST">
+    <div class="form-group">
+        <label for="position_name">职位名称</label>
+        <input type="text" class="form-control" id="position_name" name="position_name" required>
+    </div>
+    <div class="form-group">
+        <label for="salary_range">薪资范围</label>
+        <input type="text" class="form-control" id="salary_range" name="salary_range" placeholder="例如: 10k-20k" required>
+    </div>
+    <div class="form-group">
+        <label for="hire_count">招聘人数</label>
+        <input type="number" class="form-control" id="hire_count" name="hire_count" min="1" required>
+    </div>
+    <div class="form-group">
+        <label for="min_education">最低学历</label>
+        <select class="form-control" id="min_education" name="min_education" required>
+            <option value="">请选择</option>
+            <option value="高中">高中</option>
+            <option value="大专">大专</option>
+            <option value="本科">本科</option>
+            <option value="硕士">硕士</option>
+            <option value="博士">博士</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">发布职位</button>
+</form>
+{% endblock %}

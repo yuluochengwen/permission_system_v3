@@ -1,28 +1,73 @@
 {% extends "base.html" %}
 
-{% block title %}更新员工 - 权限管理系统{% endblock %}
-
-{% block header %}更新员工信息{% endblock %}
+{% block title %}编辑员工 - {{ employee.name }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="id" class="form-label">员工ID</label>
-                        <input type="text" class="form-control" id="id" value="{{ employee.id }}" disabled>
-                    </div>
-                    <div class="mb-3">
-                        <label for="name" class="form-label">员工姓名</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ employee.name }}" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">更新</button>
-                    <a href="{{ url_for('list_employees') }}" class="btn btn-secondary">取消</a>
-                </form>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">编辑员工信息</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">姓名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   value="{{ employee.name }}" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="age">年龄</label>
+                                <input type="number" class="form-control" id="age" name="age"
+                                       value="{{ employee.age or '' }}" min="18" max="100">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="gender">性别</label>
+                                <select class="form-control" id="gender" name="gender">
+                                    <option value="">请选择</option>
+                                    <option value="男" {% if employee.gender == '男' %}selected{% endif %}>男</option>
+                                    <option value="女" {% if employee.gender == '女' %}selected{% endif %}>女</option>
+                                    <option value="其他" {% if employee.gender == '其他' %}selected{% endif %}>其他</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="education">学历</label>
+                            <select class="form-control" id="education" name="education">
+                                <option value="">请选择</option>
+                                <option value="高中" {% if employee.education == '高中' %}selected{% endif %}>高中</option>
+                                <option value="大专" {% if employee.education == '大专' %}selected{% endif %}>大专</option>
+                                <option value="本科" {% if employee.education == '本科' %}selected{% endif %}>本科</option>
+                                <option value="硕士" {% if employee.education == '硕士' %}selected{% endif %}>硕士</option>
+                                <option value="博士" {% if employee.education == '博士' %}selected{% endif %}>博士</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">联系电话</label>
+                            <input type="tel" class="form-control" id="phone" name="phone"
+                                   value="{{ employee.phone or '' }}" placeholder="例如: 13800138000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">现住址</label>
+                            <textarea class="form-control" id="address" name="address" rows="3">{{ employee.address or '' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">保存</button>
+                            <a href="{{ url_for('employee_detail', employee_id=employee.id) }}" class="btn btn-secondary">取消</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

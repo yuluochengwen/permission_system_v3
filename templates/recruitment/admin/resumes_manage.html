@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}简历管理 - 权限管理系统{% endblock %}
+
+{% block header %}简历管理{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">简历筛选</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">简历状态</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">全部状态</option>
+                    <option value="初筛" {% if status == '初筛' %}selected{% endif %}>初筛</option>
+                    <option value="面试" {% if status == '面试' %}selected{% endif %}>面试</option>
+                    <option value="录用" {% if status == '录用' %}selected{% endif %}>录用</option>
+                    <option value="淘汰" {% if status == '淘汰' %}selected{% endif %}>淘汰</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="min_education" class="form-label">最低学历</label>
+                <select class="form-select" id="min_education" name="min_education">
+                    <option value="">不限制</option>
+                    <option value="高中" {% if min_education == '高中' %}selected{% endif %}>高中</option>
+                    <option value="大专" {% if min_education == '大专' %}selected{% endif %}>大专</option>
+                    <option value="本科" {% if min_education == '本科' %}selected{% endif %}>本科</option>
+                    <option value="硕士" {% if min_education == '硕士' %}selected{% endif %}>硕士</option>
+                    <option value="博士" {% if min_education == '博士' %}selected{% endif %}>博士</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">筛选</button>
+                <a href="{{ url_for('manage_resumes') }}" class="btn btn-secondary">重置</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">简历列表</h5>
+        <a href="{{ url_for('manage_resumes_trash') }}" class="btn btn-sm btn-warning">
+            <i class="fas fa-trash"></i> 垃圾桶
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>姓名</th>
+                    <th>年龄</th>
+                    <th>学历</th>
+                    <th>应聘岗位</th>
+                    <th>工作经验</th>
+                    <th>简历状态</th>  <!-- 添加简历状态列 -->
+                    <th>投递时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resume in resumes %}
+                <tr>
+                    <td>{{ resume.id }}</td>
+                    <td>{{ resume.candidate_name }}</td>
+                    <td>{{ resume.age }}</td>
+                    <td>{{ resume.education }}</td>
+                    <td>{{ resume.position_name }}</td>
+                    <td>{{ resume.work_experience }}年</td>
+                    <td>  <!-- 显示简历状态 -->
+                        {% if resume.process_status == '初筛' %}
+                            <span class="badge bg-info">{{ resume.process_status }}</span>
+                        {% elif resume.process_status == '面试' %}
+                            <span class="badge bg-primary">{{ resume.process_status }}</span>
+                        {% elif resume.process_status == '录用' %}
+                            <span class="badge bg-success">{{ resume.process_status }}</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ resume.process_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ resume.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('view_resume', resume_id=resume.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> 查看
+                            </a>
+
+                            <!-- 面试安排按钮 - 只有初筛状态可以安排面试 -->
+                            {% if resume.process_status == '初筛' %}
+                            <a href="{{ url_for('schedule_interview', resume_id=resume.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-calendar"></i> 安排面试
+                            </a>
+                            {% endif %}
+
+                            <!-- 录用按钮 - 只有面试状态可以录用 -->
+                            {% if resume.process_status == '面试' %}
+                            <a href="{{ url_for('hire_candidate', resume_id=resume.id) }}" class="btn btn-sm btn-success"
+                               onclick="return confirm('确定要录用该候选人吗？')">
+                                <i class="fas fa-check"></i> 录用
+                            </a>
+                            {% endif %}
+
+                            <!-- 淘汰按钮 - 初筛和面试状态可以淘汰 -->
+                            {% if resume.process_status in ['初筛', '面试'] %}
+                            <a href="{{ url_for('reject_candidate', resume_id=resume.id) }}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('确定要淘汰该候选人吗？')">
+                                <i class="fas fa-times"></i> 淘汰
+                            </a>
+                            {% endif %}
+
+                            <!-- 丢弃到垃圾桶按钮 -->
+                            <form action="{{ url_for('trash_resume', resume_id=resume.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-warning"
+                                        onclick="return confirm('确定要将此简历移到垃圾桶吗？')">
+                                    <i class="fas fa-trash"></i> 丢弃
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">没有找到符合条件的简历</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

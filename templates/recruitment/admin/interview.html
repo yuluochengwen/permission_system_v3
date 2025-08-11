@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}安排面试 - 权限管理系统{% endblock %}
+
+{% block header %}安排面试{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="interview_time" class="form-label">面试时间</label>
+                <input type="datetime-local" class="form-control" id="interview_time" name="interview_time" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="interview_location" class="form-label">面试地点</label>
+                <input type="text" class="form-control" id="interview_location" name="interview_location" placeholder="如：北京市海淀区科技园区88号3层会议室" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">确认安排</button>
+            <a href="{{ url_for('manage_resumes') }}" class="btn btn-secondary ms-2">返回简历列表</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

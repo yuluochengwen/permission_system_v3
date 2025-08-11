@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}员工详情 - {{ employee.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">员工详情</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="card-title">{{ employee.name }} <small class="text-muted">#{{ employee.id }}</small></h5>
+                            <!-- 显示员工角色信息 -->
+                            <div>
+                                <span class="badge bg-info">
+                                    {% if roles and roles|length > 0 %}
+                                        {{ roles|join('、') }}
+                                    {% else %}
+                                        未分配角色
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('update_employee', employee_id=employee.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <a href="{{ url_for('delete_employee', employee_id=employee.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除该员工吗？')">
+                                <i class="fas fa-trash"></i> 删除
+                            </a>
+                            <a href="{{ url_for('list_employees') }}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回列表
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 其余内容保持不变 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">基本信息</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped">
+                                        <tbody>
+                                            <tr>
+                                                <th style="width: 30%">员工ID</th>
+                                                <td>{{ employee.id }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>姓名</th>
+                                                <td>{{ employee.name }}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th>职位</th>
+                                                <td>
+                                                    {% if roles and roles|length > 0 %}
+                                                        {{ roles|join('、') }}
+                                                    {% else %}
+                                                        <span class="text-muted">未分配职位</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <th>年龄</th>
+                                                <td>{{ employee.age or '未填写' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>性别</th>
+                                                <td>{{ employee.gender or '未填写' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>学历</th>
+                                                <td>{{ employee.education or '未填写' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>联系电话</th>
+                                                <td>{{ employee.phone or '未填写' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>现住址</th>
+                                                <td>{{ employee.address or '未填写' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>系统账号</th>
+                                                <td>
+                                                    {% if user_info %}
+                                                    {{ user_info.username }}
+                                                    {% else %}
+                                                    <span class="text-muted">无关联账号</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <!-- 也可以在这里再显示一次角色信息 -->
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">最近考勤记录</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if attendance_records and attendance_records|length > 0 %}
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>日期</th>
+                                                    <th>签到时间</th>
+                                                    <th>签退时间</th>
+                                                    <th>状态</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for record in attendance_records[:5] %}
+                                                <tr>
+                                                    <td>{{ record.check_date }}</td>
+                                                    <td>{{ record.sign_in_time.strftime('%H:%M:%S') if record.sign_in_time else '-' }}</td>
+                                                    <td>{{ record.sign_out_time.strftime('%H:%M:%S') if record.sign_out_time else '-' }}</td>
+                                                    <td>
+                                                        <span class="badge
+                                                            {% if record.status == '正常' %}bg-success
+                                                            {% elif record.status in ['迟到', '早退'] %}bg-warning
+                                                            {% else %}bg-danger{% endif %}">
+                                                            {{ record.status }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <p class="text-center text-muted">暂无考勤记录</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

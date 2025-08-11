@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}查看简历 - 权限管理系统{% endblock %}
+
+{% block header %}简历详情{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">简历信息</h5>
+            </div>
+            <div class="card-body">
+                {% if resume %}
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%">ID</th>
+                            <td>{{ resume.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>姓名</th>
+                            <td>{{ resume.candidate_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>年龄</th>
+                            <td>{{ resume.age }}</td>
+                        </tr>
+                        <tr>
+                            <th>学历</th>
+                            <td>{{ resume.education }}</td>
+                        </tr>
+                        <tr>
+                            <th>毕业院校</th>
+                            <td>{{ resume.graduate_school }}</td>
+                        </tr>
+                        <tr>
+                            <th>工作经验</th>
+                            <td>{{ resume.work_experience }}年</td>
+                        </tr>
+                        <tr>
+                            <th>期望薪资</th>
+                            <td>{{ resume.expected_salary }}</td>
+                        </tr>
+                        <tr>
+                            <th>应聘岗位</th>
+                            <td>{{ resume.position_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>联系方式</th>
+                            <td>{{ resume.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>简历状态</th>
+                            <td>
+                                {% if resume.process_status == '初筛' %}
+                                    <span class="badge bg-info">{{ resume.process_status }}</span>
+                                {% elif resume.process_status == '面试' %}
+                                    <span class="badge bg-primary">{{ resume.process_status }}</span>
+                                {% elif resume.process_status == '录用' %}
+                                    <span class="badge bg-success">{{ resume.process_status }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ resume.process_status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>投递时间</th>
+                            <td>{{ resume.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-danger">
+                    未找到该简历信息
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('manage_resumes') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+
+                {% if resume and resume.process_status == '初筛' %}
+                <a href="{{ url_for('schedule_interview', resume_id=resume.id) }}" class="btn btn-primary ms-2">
+                    <i class="fas fa-calendar"></i> 安排面试
+                </a>
+                {% elif resume and resume.process_status == '面试' %}
+                <a href="{{ url_for('hire_candidate', resume_id=resume.id) }}" class="btn btn-success ms-2"
+                   onclick="return confirm('确定要录用该候选人吗？')">
+                    <i class="fas fa-check"></i> 录用
+                </a>
+                {% endif %}
+
+                <form action="{{ url_for('trash_resume', resume_id=resume.id) }}" method="POST" class="d-inline ms-2">
+                    <button type="submit" class="btn btn-warning"
+                            onclick="return confirm('确定要将此简历移到垃圾桶吗？')">
+                        <i class="fas fa-trash"></i> 丢弃
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

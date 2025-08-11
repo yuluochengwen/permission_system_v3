@@ -1,36 +1,115 @@
+<!DOCTYPE html>
 {% extends "base.html" %}
 
-{% block title %}首页 - 权限管理系统{% endblock %}
+{% block title %}签到打卡{% endblock %}
 
-{% block header %}首页{% endblock %}
+{% block header %}签到打卡{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title mb-4">今日打卡</h5>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('attendance_sign_in') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> 上班签到
+                    </a>
+                    <a href="{{ url_for('attendance_sign_out') }}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-sign-out-alt"></i> 下班签退
+                    </a>
+                </div>
+
+                <!-- 显示今日考勤状态 -->
+                {% set today = datetime.now().strftime('%Y-%m-%d') %}
+                {% set today_record = None %}
+                {% for record in attendance_records %}
+                    {% if record.check_date == today %}
+                        {% set today_record = record %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if today_record %}
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6>今日状态</h6>
+                    <p>
+                        上班签到: {{ today_record.sign_in_time.strftime('%H:%M:%S') if today_record.sign_in_time else '未签到' }}<br>
+                        下班签退: {{ today_record.sign_out_time.strftime('%H:%M:%S') if today_record.sign_out_time else '未签退' }}<br>
+                        状态: <span class="badge {% if today_record.status == '正常' %}bg-success{% elif today_record.status in ['迟到', '早退'] %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ today_record.status }}
+                        </span>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">欢迎使用权限管理系统</h5>
-                <p class="card-text">
-                    这是一个基于角色的权限管理系统，您可以通过左侧导航菜单访问各个功能模块。
-                </p>
-                
-                <!-- 替换为签到功能 -->
-                <div class="mt-4">
-                    <h6>今日签到</h6>
-                    <div class="d-flex gap-3 mt-2">
-                        <a href="{{ url_for('attendance_sign_in') }}" class="btn btn-primary">
-                            上班签到
-                        </a>
-                        <a href="{{ url_for('attendance_sign_out') }}" class="btn btn-success">
-                            下班签到
-                        </a>
-                        <a href="{{ url_for('my_attendance_records') }}" class="btn btn-info">
-                            查看我的签到记录
-                        </a>
-                    </div>
+                <h5 class="card-title">考勤规则</h5>
+                <div class="bg-light p-3 rounded">
+                    <p><strong>上班时间:</strong> {{ attendance_rules.work_start_time }}</p>
+                    <p><strong>下班时间:</strong> {{ attendance_rules.work_end_time }}</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- 考勤记录展示区域 -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">我的考勤记录</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>日期</th>
+                        <th>上班签到</th>
+                        <th>下班签退</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if attendance_records and attendance_records|length > 0 %}
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.check_date }}</td>
+                            <td>{{ record.sign_in_time.strftime('%H:%M:%S') if record.sign_in_time else '-' }}</td>
+                            <td>{{ record.sign_out_time.strftime('%H:%M:%S') if record.sign_out_time else '-' }}</td>
+                            <td>
+                                <span class="badge {% if record.status == '正常' %}bg-success{% elif record.status in ['迟到', '早退'] %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ record.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">暂无考勤记录</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 自动隐藏flash消息
+    setTimeout(() => {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(msg => {
+            msg.style.opacity = '0';
+            msg.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => msg.remove(), 500);
+        });
+    }, 3000);
+</script>
 {% endblock %}
